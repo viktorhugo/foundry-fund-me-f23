@@ -2,65 +2,16 @@
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
 
-Foundry consists of:
+1. forge install smartcontractkit/chainlink-brownie-contracts --no-commit
+2. forge test -vv
+3. forge script script/DeployFundMe.s.sol
+4. see more details from errors => forge test -vv
+5. forge test -vvvv --match-test testVersionIsAccurate  --fork-url $SEPOLIA_RPC_URL
+6. forge coverage --fork-url $SEPOLIA_RPC_URL => see how many code its testing
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+# Four Types unit test
 
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+1. ( Unit ): testing a specific part (function ) of our code
+2. ( Integration ): testing how our code works with other parts of our code
+3. ( Forked ): testing our code on a simulated real environment
+4. ( Staging ): testing our code in real environment that is not prod
