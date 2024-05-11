@@ -50,10 +50,11 @@ contract FundMe {
         // have a minimum $ sent $5
         // 1. how do we send ETH to this contract
         // uint256 valueConverter = getConversionRate(msg.value);
+        console.log("### FundMe - fund - trying to fund", msg.sender, msg.value);
         require(msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, "didn't send enough ETH"); // 1e18 = 1 ETH = 1000000000000000000 = 1 * 10 ** 18
         s_funders.push(msg.sender);
         s_addressToAmountFunded[msg.sender] = s_addressToAmountFunded[msg.sender] + msg.value;
-        console.log('New fund', msg.sender, msg.value);
+        console.log('### FundMe - fund - new fund', msg.sender, msg.value);
     }
 
     // GAS Optimization

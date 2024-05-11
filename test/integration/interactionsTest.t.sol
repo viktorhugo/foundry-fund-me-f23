@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 import { Test, console }  from "forge-std/Test.sol";
 import { FundMe } from "../../src/FundMe.sol";
 import { DeployFundMe } from "../../script/DeployFundMe.s.sol";
-import { FundFundMe } from "../../script/Interactions.s.sol";
+import { FundFundMeInteraction, WithdrawFundMeInteraction } from "../../script/Interactions.s.sol";
 
 contract InteractionsTest is Test { 
     
@@ -21,11 +21,16 @@ contract InteractionsTest is Test {
         console.log("STARTING_USER", USER);
     }
 
-    function testUserCanFundInteractions() public { // etamos asegurandonos de que nuestra fund funcione
-        FundFundMe fundFundMe = new FundFundMe();
+    function testUserCanFundInteractions() public {
+        // financiar nuestro contrato implementado el mas reciente
+        FundFundMeInteraction fundFundMeInteraction = new FundFundMeInteraction();
         vm.prank(USER);
-        vm.deal(USER, STARTING_BALANCE);
-        fundFundMe.fundFundMe(address( fundMe ));
+        vm.deal(USER, 1e18);
+        fundFundMeInteraction.fundFundMe(address( fundMe ));
+
+        // retirar los fondos
+        WithdrawFundMeInteraction withdrawFundMeInteraction = new WithdrawFundMeInteraction();
+        withdrawFundMeInteraction.withdrawFundMe(address( fundMe ));
 
         address funder = fundMe.getFunder(0); // obtiene el primer funder
         assertEq(funder, USER);
