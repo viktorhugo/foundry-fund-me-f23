@@ -8,6 +8,8 @@
 4. see more details from errors => forge test -vv
 5. forge test -vvvv --match-test testVersionIsAccurate  --fork-url $SEPOLIA_RPC_URL
 6. forge coverage --fork-url $SEPOLIA_RPC_URL => see how many code its testing
+7. forge inspect FundMe storageLayout => why store memory
+8. forge snapshot , create (.gas-snapshot) file with functions price gas
 
 # Four Types unit test
 
@@ -15,3 +17,10 @@
 2. ( Integration ): testing how our code works with other parts of our code
 3. ( Forked ): testing our code on a simulated real environment
 4. ( Staging ): testing our code in real environment that is not prod
+
+# todo
+
+1. Proper README
+2. Integration tests
+3. Programmatic verification
+4. Push to GitHub

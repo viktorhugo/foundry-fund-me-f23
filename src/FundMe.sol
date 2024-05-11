@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
+/// s_name => quiere decir que es una variable que se esta leyendo desde el storage
+
 import { PriceConverter } from "./PriceConverter.sol";
 import { AggregatorV3Interface } from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
@@ -54,6 +56,26 @@ contract FundMe {
         console.log('New fund', msg.sender, msg.value);
     }
 
+    // GAS Optimization
+    function cheaperWithdraw() public onlyOwner {
+        // ahorramos gas el leer s_funders.length de la memoria (memory) en lugar del almacenamiento (stotage)
+        uint256 fundersLength = s_funders.length;
+        // recorre todos el array s_funders
+        for (uint256 funderIndex; funderIndex < fundersLength; funderIndex++) { 
+            // find funder 
+            address funder = s_funders[funderIndex];
+            // update mapping 
+            s_addressToAmountFunded[funder] = 0;
+        }
+        // reset s_funders with new array
+        s_funders = new address[](0);
+        // call witdraw
+        (bool calleSuccess, /*bytes memory dataRturned*/ ) = payable (i_owner).call{ 
+            value: address(this).balance
+        }("");
+        require(calleSuccess, "Call failed");
+    }
+
     function withdraw() public onlyOwner {
         // recorre todos el array s_funders
         for (uint256 funderIndex; funderIndex < s_funders.length; funderIndex++) { 
@@ -79,6 +101,7 @@ contract FundMe {
 
     // modifiers (declare functionality)
     modifier onlyOwner() {
+        console.log('Only Owner', msg.sender, i_owner);
         // _; // Esto quiere decir que puede ejecutar lo que sigue
         // require(msg.sender == i_owner, "Sender is not Owner");
         if (msg.sender != i_owner) revert FundMe__NotOwner();

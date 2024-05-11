@@ -2,8 +2,8 @@
 pragma solidity 0.8.19;
 
 import { Test, console }  from "forge-std/Test.sol";
-import { FundMe } from "../src/FundMe.sol";
-import { DeployFundMe } from "../script/DeployFundMe.s.sol";
+import { FundMe } from "../../src/FundMe.sol";
+import { DeployFundMe } from "../../script/DeployFundMe.s.sol";
 
 contract FundMeTest is Test {
     
@@ -11,6 +11,7 @@ contract FundMeTest is Test {
     address USER = makeAddr("user"); // fake USER
     uint256 constant SEND_VALUE = 0.1 ether;
     uint256 constant STARTING_BALANCE = 10 ether;
+    uint256 constant GAS_PRICE = 1;
     // siempre se va ejecutar primeramente la function setUp
     function setUp() external {
         DeployFundMe deployFundMe = new DeployFundMe();
@@ -63,7 +64,7 @@ contract FundMeTest is Test {
 
     modifier funded() {
         vm.prank(USER); // fake user
-        console.log('FUNDED_PRANK_USER', USER, fundMe.getOwner().balance);
+        console.log('FUNDED_PRANK_USER', USER, fundMe.getOwner(), address(this));
         fundMe.fund{ value: SEND_VALUE }();// financiar con algo de "ether"(envio a la fund account)
         _;
     }
@@ -85,10 +86,18 @@ contract FundMeTest is Test {
         console.log('saldo del fondo inicial', startingFundMeBalance);
 
         // Act (Accion para probar la prueba)
+        uint256 gasStart = gasleft(); // cuanto gas queda en su ultima llamada
+        console.log('gasStart', gasStart);
+        vm.txGasPrice(GAS_PRICE);
         vm.prank(fundMe.getOwner()); // solo el owner puede hacer un withdraw, entonces solo queremos hacer una broma, asegurarnos de que realmente somos el owner
-        console.log('fundMe.getOwner()', fundMe.getOwner());
+        // console.log('fundMe.getOwner()', fundMe.getOwner());
         fundMe.withdraw(); // haciendo el withdraw
         console.log('fundMe', startingFundMeBalance);
+
+        uint256 gasEnd = gasleft();
+        console.log('gasEnd', gasEnd);
+        uint256 gasUsed = (gasStart - gasEnd) * tx.gasprice; // current gas price 
+        console.log('gasUsed', gasUsed);
 
         // Assert (afrimar la prueba)
         uint256 endingOwnerBalance = fundMe.getOwner().balance;
@@ -129,5 +138,36 @@ contract FundMeTest is Test {
         assert(startingOwnerBalance + startingFundMeBalance == fundMe.getOwner().balance);
 
     }   
+
+    // testing con una lista de funders (10 funders) que 
+    function testWithdrawWithMultipleFundersCheaper() public funded {
+        
+         // Arrange (Organizar la prueba)
+        uint160 numberOfFunders = 10;
+        uint160 startingFunderIndex = 1;
+        for (uint160 i = startingFunderIndex; i < numberOfFunders; i++) {
+            // vm.prank new Address
+            // vm.deal new Address
+            // address()
+            hoax(address(i), SEND_VALUE); // hoax => Configura un prank desde una dirección que tiene algo de éter.
+            fundMe.fund{ value: SEND_VALUE }();
+        }
+
+        uint256 startingOwnerBalance = fundMe.getOwner().balance;
+        console.log('saldo inicial de owner', startingOwnerBalance);
+        uint256 startingFundMeBalance = address(fundMe).balance;
+        console.log('saldo del fondo inicial', startingFundMeBalance);
+
+        // Act (Accion para probar la prueba)
+        vm.startPrank(fundMe.getOwner());
+        fundMe.cheaperWithdraw();
+        vm.stopPrank();
+
+        // Assert (afrimar la prueba)
+        assert(address(fundMe).balance == 0);
+        assert(startingOwnerBalance + startingFundMeBalance == fundMe.getOwner().balance);
+
+    }   
+
 
 }
