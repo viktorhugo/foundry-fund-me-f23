@@ -12,14 +12,24 @@ contract FundMeTest is Test {
     uint256 constant SEND_VALUE = 0.1 ether;
     uint256 constant STARTING_BALANCE = 10 ether;
     uint256 constant GAS_PRICE = 1;
+    
     // siempre se va ejecutar primeramente la function setUp
     function setUp() external {
         DeployFundMe deployFundMe = new DeployFundMe();
         fundMe  = deployFundMe.run();
         vm.deal(USER, STARTING_BALANCE); // add balance to  fake USER
-        console.log("STARTING_USER", USER);
         console.log("STARTING_BALANCE", STARTING_BALANCE);
+        console.log("STARTING_USER", USER);
     }
+
+    // = Modifier =
+    modifier funded() {
+        vm.prank(USER); // fake user
+        console.log('FUNDED_PRANK_USER', USER, fundMe.getOwner(), address(this));
+        fundMe.fund{ value: SEND_VALUE }();// financiar con algo de "ether"(envio a la fund account)
+        _;
+    }
+
 
     function testMinimumDollarIsFive() public view {
         assertEq(fundMe.MINIMUM_USD(), 5 * 1e18);
@@ -27,9 +37,9 @@ contract FundMeTest is Test {
     }
 
     function testOwnerIsMsgSender() public view {
-        console.log(fundMe.getOwner());
-        console.log(msg.sender);
-        console.log(address(this));
+        console.log("getOwner", fundMe.getOwner());
+        console.log("msg.sender", msg.sender);
+        console.log("address(this)", address(this));
         assertEq(fundMe.getOwner(), msg.sender);
     }
 
@@ -38,7 +48,7 @@ contract FundMeTest is Test {
     }
 
     function testFundFailWithouthEnoughETH() public payable {
-        vm.expectRevert("didn't send enough ETH"); // en la siguiente linea se deberia revertir
+        vm.expectRevert("You need to send more ETH"); // en la siguiente linea se deberia revertir
         // assert(this tx fails/reverts)
         fundMe.fund(); // send 0 ETH
     }
@@ -48,7 +58,7 @@ contract FundMeTest is Test {
         fundMe.fund{ value: SEND_VALUE }();
         vm.stopPrank();
 
-        uint256 amountFunded = fundMe.getAddresToAmountFunded(USER);
+        uint256 amountFunded = fundMe.getAddressToAmountFunded(USER);
         assertEq(amountFunded, SEND_VALUE);
     }
 
@@ -60,13 +70,6 @@ contract FundMeTest is Test {
         // solo tenemos un funder
         address funder = fundMe.getFunder(0);
         assertEq(funder, USER);
-    }
-
-    modifier funded() {
-        vm.prank(USER); // fake user
-        console.log('FUNDED_PRANK_USER', USER, fundMe.getOwner(), address(this));
-        fundMe.fund{ value: SEND_VALUE }();// financiar con algo de "ether"(envio a la fund account)
-        _;
     }
 
     // ahora podemos implementar con el modifier

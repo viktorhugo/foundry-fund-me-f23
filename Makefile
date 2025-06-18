@@ -8,8 +8,11 @@ build:
 deploy-sepolia:
 	forge script script/DeployFundMe.s.sol:DeployFundMe --rpc-url $(SEPOLIA_RPC_URL) --broadcast --sender $(ADDRESS_SENDER) --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv;
 
-deploy-testnet:
-	forge script script/DeployFundMe.s.sol:DeployFundMe --rpc-url $(RPC_URL) --broadcast --sender $(ADDRESS_SENDER) --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
+deploy-testnet-ganache:
+	forge script script/DeployFundMe.s.sol:DeployFundMe --rpc-url $(RPC_URL_GANACHE) --broadcast --account defaultKeyGanache --sender $(ADDRESS_SENDER_GANACHE) -vvvv
+
+deploy-testnet-anvil:
+	forge script script/DeployFundMe.s.sol:DeployFundMe --rpc-url $(RPC_URL_ANVIL) --private-key $(PRIVATE_KEY_ANVIL)  --broadcast -vvvv
 
 .PHONY: all test clean deploy fund help install snapshot format anvil
 
@@ -45,6 +48,7 @@ format :; forge fmt
 anvil :; anvil -m 'test test test test test test test test test test test junk' --steps-tracing --block-time 1
 
 NETWORK_ARGS := --rpc-url  $(RPC_URL) --private-key $(DEFAULT_ANVIL_KEY) --broadcast
+NETWORK_ARGS_SENDER := --rpc-url  $(RPC_URL) --sender $(ADDRESS_SENDER) --verify --broadcast
 
 ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
 	NETWORK_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --private-key $(PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
@@ -52,6 +56,9 @@ endif
 
 deploy:
 	@forge script script/DeployFundMe.s.sol:DeployFundMe $(NETWORK_ARGS)
+
+deploy-sender:
+	@forge script script/DeployFundMe.s.sol:DeployFundMe $(NETWORK_ARGS_SENDER)
 
 # For deploying Interactions.s.sol:FundFundMe as well as for Interactions.s.sol:WithdrawFundMe we have to include a sender's address `--sender <ADDRESS>`
 SENDER_ADDRESS := <sender's address>
